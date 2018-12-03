@@ -5,9 +5,8 @@ Version: 0.1-0
 Description: TODO
 License: BSD 2-clause License + file LICENSE
 Depends:
-    R (>= 3.0.0)
-Imports:
-    pbdMPI (>= 0.3-6)
+    R (>= 3.0.0),
+    pbdMPI (>= 0.3-8)
 SystemRequirements: OpenMPI (>= 1.5.4) on Solaris, Linux, Mac, and FreeBSD.
     MS-MPI (Microsoft HPC Pack 2012) or MPICH2 (>= 1.4.1p1) on Windows.
 ByteCompile: yes
