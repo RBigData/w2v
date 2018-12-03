@@ -16,6 +16,11 @@
  * https://code.google.com/archive/p/word2vec/
  */
 
+
+// This source file has been modified for use within this R package. See the
+// file CHANGES at the same location as this source file for a full list of
+// modifications.
+
 #include "pWord2Vec.h"
 
 #include <cstring>
@@ -767,6 +772,7 @@ void saveModel() {
     fclose(fo);
 }
 
+/*
 int main(int argc, char **argv) {
 
     char hostname[MPI_MAX_PROCESSOR_NAME];
@@ -916,3 +922,4 @@ int main(int argc, char **argv) {
     MPI_Finalize();
     return 0;
 }
+*/

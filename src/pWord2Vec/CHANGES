@@ -1,0 +1,2 @@
+Modified 12/3/2018 by Drew Schmidt:
+* Added pWord2Vec.h to accommodate gcc and add missing headers.
