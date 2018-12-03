@@ -3,8 +3,7 @@
 rm -rf ./src/*.dylib
 rm -rf ./src/*.so
 rm -rf ./src/*.o
-rm -rf ./src/*.d
-rm -rf ./src/*.dll
-rm -rf ./src/*.a
-rm -rf ./src/*.rc
-rm -rf ./src/*.rds
+
+rm -rf ./src/pWord2Vec/*.o
+
+rm -rf ./src/Makevars

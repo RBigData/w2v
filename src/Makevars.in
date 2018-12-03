@@ -1,0 +1,16 @@
+SPMD_CPPFLAGS = @SPMD_CPPFLAGS@
+SPMD_LDFLAGS = @SPMD_LDFLAGS@
+
+PKG_CXXFLAGS = $(SPMD_CPPFLAGS) $(SHLIB_OPENMP_CXXFLAGS)
+PKG_LIBS = $(SPMD_LDFLAGS) $(SHLIB_OPENMP_CXXFLAGS)
+
+
+OBJECTS = pWord2Vec/pWord2Vec_mpi.o #w2v_native.o 
+
+
+all: $(SHLIB)
+$(SHLIB): $(OBJECTS)
+
+
+clean:
+	@rm -rf *.o *.so *.dll Makevars $(USER_CONF) $(SHLIB) $(OBJECTS)
