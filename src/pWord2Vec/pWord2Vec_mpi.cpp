@@ -17,9 +17,6 @@
  */
 
 
-// This source file has been modified for use within this R package. See the
-// file CHANGES at the same location as this source file for a full list of
-// modifications.
 // Modifications copyright (C) 2018 ORNL
 
 #include "pWord2Vec.h"
