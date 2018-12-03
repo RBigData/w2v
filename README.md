@@ -6,7 +6,7 @@
 * **Bug reports**: https://github.com/rbigdata/w2v/issues
 
 
-TODO
+🚨 Highly experimental 🚨
 
 
 ## Installation
