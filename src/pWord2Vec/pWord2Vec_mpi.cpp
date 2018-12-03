@@ -20,6 +20,7 @@
 // Modifications copyright (C) 2018 ORNL
 
 #include "pWord2Vec.h"
+#include <Rinternals.h>
 
 #include <cstring>
 #include <cmath>
@@ -34,15 +35,6 @@
 
 using namespace std;
 
-#define MAX_STRING 100
-#define EXP_TABLE_SIZE 1000
-#define MAX_EXP 6
-#define MAX_SENTENCE_LENGTH 1000
-#define MPI_SCALAR MPI_FLOAT
-
-typedef float real;
-typedef unsigned int uint;
-typedef unsigned long long ulonglong;
 
 struct vocab_word {
     uint cn;
@@ -66,20 +58,37 @@ public:
     }
 };
 
-int binary = 0, debug_mode = 2;
-bool disk = false;
-int num_procs = 1, num_threads = 12, negative = 5, iter = 5, window = 5, batch_size = 11, my_rank = -1;
-unsigned int min_count = 5;
-unsigned int min_reduce = 1;
-int vocab_max_size = 1000, vocab_size = 0, hidden_size = 100, min_sync_words = 1024, full_sync_times = 0;
-int message_size = 1024; // MB
-ulonglong train_words = 0, file_size = 0;
-real alpha = 0.1f, sample = 1e-3f;
-real model_sync_period = 0.1f;
-const real EXP_RESOLUTION = EXP_TABLE_SIZE / (MAX_EXP * 2.0f);
 
-char train_file[MAX_STRING], output_file[MAX_STRING];
-char save_vocab_file[MAX_STRING], read_vocab_file[MAX_STRING];
+int num_procs;
+int num_threads;
+int my_rank = -1;
+
+int binary;
+bool verbose;
+bool disk;
+int negative;
+int iter;
+int window;
+int batch_size;
+unsigned int min_count;
+unsigned int min_reduce;
+int vocab_max_size;
+int vocab_size;
+int hidden_size;
+int min_sync_words;
+int full_sync_times;
+int message_size; // MB
+ulonglong train_words;
+ulonglong file_size;
+real alpha;
+real sample;
+real model_sync_period;
+
+char output_file[MAX_STRING];
+char save_vocab_file[MAX_STRING];
+char read_vocab_file[MAX_STRING];
+char train_file[MAX_STRING];
+
 const int vocab_hash_size = 30000000;  // Maximum 30 * 0.7 = 21M words in the vocabulary
 const int table_size = 1e8;
 
@@ -88,7 +97,8 @@ int *vocab_hash = NULL;
 int *table = NULL;
 real *Wih = NULL, *Woh = NULL, *expTable = NULL;
 
-void InitUnigramTable() {
+
+static void InitUnigramTable() {
     table = (int *) _mm_malloc(table_size * sizeof(int), 64);
 
     const real power = 0.75f;
@@ -112,7 +122,7 @@ void InitUnigramTable() {
 }
 
 // Reads a single word from a file, assuming space + tab + EOL to be word boundaries
-void ReadWord(char *word, FILE *fin) {
+static void ReadWord(char *word, FILE *fin) {
     int a = 0, ch;
     while (!feof(fin)) {
         ch = fgetc(fin);
@@ -139,7 +149,7 @@ void ReadWord(char *word, FILE *fin) {
 }
 
 // Returns hash value of a word
-int GetWordHash(char *word) {
+static int GetWordHash(char *word) {
     uint hash = 0;
     for (unsigned int i = 0; i < strlen(word); i++)
         hash = hash * 257 + word[i];
@@ -148,7 +158,7 @@ int GetWordHash(char *word) {
 }
 
 // Returns position of a word in the vocabulary; if the word is not found, returns -1
-int SearchVocab(char *word) {
+static int SearchVocab(char *word) {
     int hash = GetWordHash(word);
     while (1) {
         if (vocab_hash[hash] == -1)
@@ -161,7 +171,7 @@ int SearchVocab(char *word) {
 }
 
 // Reads a word and returns its index in the vocabulary
-int ReadWordIndex(FILE *fin) {
+static int ReadWordIndex(FILE *fin) {
     char word[MAX_STRING];
     ReadWord(word, fin);
     if (feof(fin))
@@ -170,7 +180,7 @@ int ReadWordIndex(FILE *fin) {
 }
 
 // Adds a word to the vocabulary
-int AddWordToVocab(char *word) {
+static int AddWordToVocab(char *word) {
     int hash, length = strlen(word) + 1;
     if (length > MAX_STRING)
         length = MAX_STRING;
@@ -191,12 +201,12 @@ int AddWordToVocab(char *word) {
 }
 
 // Used later for sorting by word counts
-int VocabCompare(const void *a, const void *b) {
+static int VocabCompare(const void *a, const void *b) {
     return ((struct vocab_word *) b)->cn - ((struct vocab_word *) a)->cn;
 }
 
 // Sorts the vocabulary by frequency using word counts
-void SortVocab() {
+static void SortVocab() {
     // Sort the vocabulary and keep </s> at the first position
     qsort(&vocab[1], vocab_size - 1, sizeof(struct vocab_word), VocabCompare);
     memset(vocab_hash, -1, vocab_hash_size * sizeof(int));
@@ -221,7 +231,7 @@ void SortVocab() {
 }
 
 // Reduces the vocabulary by removing infrequent tokens
-void ReduceVocab() {
+static void ReduceVocab() {
     int count = 0;
     for (int i = 0; i < vocab_size; i++) {
         if (vocab[i].cn > min_reduce) {
@@ -245,7 +255,7 @@ void ReduceVocab() {
     min_reduce++;
 }
 
-void LearnVocabFromTrainFile() {
+static void LearnVocabFromTrainFile() {
     char word[MAX_STRING];
 
     memset(vocab_hash, -1, vocab_hash_size * sizeof(int));
@@ -264,7 +274,7 @@ void LearnVocabFromTrainFile() {
         if (feof(fin))
             break;
         train_words++;
-        if (my_rank == 0 && debug_mode > 1 && (train_words % 100000 == 0)) {
+        if (my_rank == 0 && verbose && (train_words % 100000 == 0)) {
             printf("%lldK%c", train_words / 1000, 13);
             fflush(stdout);
         }
@@ -278,7 +288,7 @@ void LearnVocabFromTrainFile() {
             ReduceVocab();
     }
     SortVocab();
-    if (my_rank == 0 && debug_mode > 0) {
+    if (my_rank == 0 && verbose) {
         printf("Vocab size: %d\n", vocab_size);
         printf("Words in train file: %lld\n", train_words);
     }
@@ -286,14 +296,14 @@ void LearnVocabFromTrainFile() {
     fclose(fin);
 }
 
-void SaveVocab() {
+static void SaveVocab() {
     FILE *fo = fopen(save_vocab_file, "wb");
     for (int i = 0; i < vocab_size; i++)
         fprintf(fo, "%s %d\n", vocab[i].word, vocab[i].cn);
     fclose(fo);
 }
 
-void ReadVocab() {
+static void ReadVocab() {
     char word[MAX_STRING];
     FILE *fin = fopen(read_vocab_file, "rb");
     if (fin == NULL) {
@@ -312,7 +322,7 @@ void ReadVocab() {
         fscanf(fin, "%d%c", &vocab[i].cn, &c);
     }
     SortVocab();
-    if (debug_mode > 0 && my_rank == 0) {
+    if (verbose && my_rank == 0) {
         printf("Vocab size: %d\n", vocab_size);
         printf("Words in train file: %lld\n", train_words);
     }
@@ -329,7 +339,7 @@ void ReadVocab() {
     fclose(fin2);
 }
 
-void InitNet() {
+static void InitNet() {
     Wih = (real *) _mm_malloc(vocab_size * hidden_size * sizeof(real), 64);
     Woh = (real *) _mm_malloc(vocab_size * hidden_size * sizeof(real), 64);
     if (!Wih || !Woh) {
@@ -351,7 +361,7 @@ void InitNet() {
     }
 }
 
-ulonglong loadStream(FILE *fin, int *stream, const ulonglong total_words) {
+static ulonglong loadStream(FILE *fin, int *stream, const ulonglong total_words) {
     ulonglong word_count = 0;
     while (!feof(fin) && word_count < total_words) {
         int w = ReadWordIndex(fin);
@@ -365,7 +375,7 @@ ulonglong loadStream(FILE *fin, int *stream, const ulonglong total_words) {
 }
 
 // assume v > 0
-inline unsigned int getNumZeros(unsigned int v) {
+static inline unsigned int getNumZeros(unsigned int v) {
     unsigned int numzeros = 0;
     while (!(v & 0x1)) {
         numzeros++;
@@ -374,8 +384,7 @@ inline unsigned int getNumZeros(unsigned int v) {
     return numzeros;
 }
 
-void Train_SGNS_MPI() {
-
+static void Train_SGNS_MPI() {
 #ifdef USE_MKL
     mkl_set_num_threads(1);
 #endif
@@ -462,7 +471,7 @@ void Train_SGNS_MPI() {
                     compute_go = true;
 
                     // print out status
-                    if (my_rank == 0 && debug_mode > 1) {
+                    if (my_rank == 0 && verbose) {
                         double now = omp_get_wtime();
                         printf("%cAlpha: %f  Progress: %.2f%%  Words/sec: %.2fk  Words sync'ed: %d", 13, alpha,
                                 progress * 100,
@@ -742,7 +751,7 @@ void Train_SGNS_MPI() {
     }
 }
 
-int ArgPos(char *str, int argc, char **argv) {
+static int ArgPos(char *str, int argc, char **argv) {
     for (int a = 1; a < argc; a++)
         if (!strcmp(str, argv[a])) {
             //if (a == argc - 1) {
@@ -754,7 +763,7 @@ int ArgPos(char *str, int argc, char **argv) {
     return -1;
 }
 
-void saveModel() {
+static void saveModel() {
     // save the model
     FILE *fo = fopen(output_file, "wb");
     // Save the word vectors
@@ -772,154 +781,91 @@ void saveModel() {
     fclose(fo);
 }
 
-/*
-int main(int argc, char **argv) {
 
-    char hostname[MPI_MAX_PROCESSOR_NAME];
-    int hostname_len;
 
-    // retrieve MPI task info
-    int mpi_thread_provided;
-    MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &mpi_thread_provided);
-    if (mpi_thread_provided != MPI_THREAD_MULTIPLE) {
-        printf("MPI multiple thread is NOT provided!!! (%d != %d)\n", mpi_thread_provided, MPI_THREAD_MULTIPLE);
-        return 1;
-    }
-    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-    MPI_Get_processor_name(hostname, &hostname_len);
+// if ((i = ArgPos((char *) "-train", argc, argv)) > 0)
+//   strcpy(train_file, argv[i + 1]);
+// if ((i = ArgPos((char *) "-save-vocab", argc, argv)) > 0)
+//   strcpy(save_vocab_file, argv[i + 1]);
+// if ((i = ArgPos((char *) "-read-vocab", argc, argv)) > 0)
+//   strcpy(read_vocab_file, argv[i + 1]);
+// if ((i = ArgPos((char *) "-output", argc, argv)) > 0)
+//   strcpy(output_file, argv[i + 1]);
 
-    printf("processor name: %s, number of processors: %d, rank: %d\n", hostname, num_procs, my_rank);
 
-    if (argc == 1) {
-        if (my_rank == 0) {
-            printf("parallel word2vec (sgns) in distributed memory system\n\n");
-            printf("Options:\n");
-            printf("Parameters for training:\n");
-            printf("\t-train <file>\n");
-            printf("\t\tUse text data from <file> to train the model\n");
-            printf("\t-output <file>\n");
-            printf("\t\tUse <file> to save the resulting word vectors\n");
-            printf("\t-size <int>\n");
-            printf("\t\tSet size of word vectors; default is 100\n");
-            printf("\t-window <int>\n");
-            printf("\t\tSet max skip length between words; default is 5\n");
-            printf("\t-sample <float>\n");
-            printf("\t\tSet threshold for occurrence of words. Those that appear with higher frequency in the training data\n");
-            printf("\t\twill be randomly down-sampled; default is 1e-3, useful range is (0, 1e-5)\n");
-            printf("\t-negative <int>\n");
-            printf("\t\tNumber of negative examples; default is 5, common values are 3 - 10 (0 = not used)\n");
-            printf("\t-threads <int>\n");
-            printf("\t\tUse <int> threads (default 12)\n");
-            printf("\t-iter <int>\n");
-            printf("\t\tNumber of training iterations; default is 5\n");
-            printf("\t-min-count <int>\n");
-            printf("\t\tThis will discard words that appear less than <int> times; default is 5\n");
-            printf("\t-alpha <float>\n");
-            printf("\t\tSet the starting learning rate; default is 0.1\n");
-            printf("\t-debug <int>\n");
-            printf("\t\tSet the debug mode (default = 2 = more info during training)\n");
-            printf("\t-binary <int>\n");
-            printf("\t\tSave the resulting vectors in binary mode; default is 0 (off)\n");
-            printf("\t-save-vocab <file>\n");
-            printf("\t\tThe vocabulary will be saved to <file>\n");
-            printf("\t-read-vocab <file>\n");
-            printf("\t\tThe vocabulary will be read from <file>, not constructed from the training data\n");
-            printf("\t-batch-size <int>\n");
-            printf("\t\tThe batch size used for mini-batch training; default is 11 (i.e., 2 * window + 1)\n");
-            printf("\t-disk\n");
-            printf("\t\tStream text from disk during training, otherwise the text will be loaded into memory before training\n");
-            printf("\t-sync-period <float>\n");
-            printf("\t\tSynchronize model every <float> seconds; default is 0.1\n");
-            printf("\t-min-sync-words <int>\n");
-            printf("\t\tMinimal number of words to be synced at each model sync; default is 1024\n");
-            printf("\t-full-sync-times <int>\n");
-            printf("\t\tEnforced full model sync-up times during training; default is 0\n");
-            printf("\t-message-size <int>\n");
-            printf("\t\tMPI message chunk size in MB; default is 1024MB\n");
-            printf("\nExamples:\n");
-            printf("mpirun -np 1 ./word2vec_mpi -train data.txt -output vec.txt -size 200 -window 5 -sample 1e-4 -negative 5 -binary 0 -iter 3\n\n");
-        }
-        MPI_Finalize();
-        return 1;
-    }
 
-    output_file[0] = 0;
-    save_vocab_file[0] = 0;
-    read_vocab_file[0] = 0;
-
-    int i;
-    if ((i = ArgPos((char *) "-size", argc, argv)) > 0)
-        hidden_size = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-train", argc, argv)) > 0)
-        strcpy(train_file, argv[i + 1]);
-    if ((i = ArgPos((char *) "-save-vocab", argc, argv)) > 0)
-        strcpy(save_vocab_file, argv[i + 1]);
-    if ((i = ArgPos((char *) "-read-vocab", argc, argv)) > 0)
-        strcpy(read_vocab_file, argv[i + 1]);
-    if ((i = ArgPos((char *) "-debug", argc, argv)) > 0)
-        debug_mode = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-binary", argc, argv)) > 0)
-        binary = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-alpha", argc, argv)) > 0)
-        alpha = atof(argv[i + 1]);
-    if ((i = ArgPos((char *) "-output", argc, argv)) > 0)
-        strcpy(output_file, argv[i + 1]);
-    if ((i = ArgPos((char *) "-window", argc, argv)) > 0)
-        window = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-sample", argc, argv)) > 0)
-        sample = atof(argv[i + 1]);
-    if ((i = ArgPos((char *) "-negative", argc, argv)) > 0)
-        negative = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-threads", argc, argv)) > 0)
-        num_threads = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-iter", argc, argv)) > 0)
-        iter = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-min-count", argc, argv)) > 0)
-        min_count = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-batch-size", argc, argv)) > 0)
-        batch_size = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-disk", argc, argv)) > 0)
-        disk = true;
-    if ((i = ArgPos((char *) "-sync-period", argc, argv)) > 0)
-        model_sync_period = atof(argv[i + 1]);
-    if ((i = ArgPos((char *) "-min-sync-words", argc, argv)) > 0)
-        min_sync_words = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-full-sync-times", argc, argv)) > 0)
-        full_sync_times = atoi(argv[i + 1]);
-    if ((i = ArgPos((char *) "-message-size", argc, argv)) > 0)
-        message_size = atoi(argv[i + 1]);
-
-    if (my_rank == 0) {
-        printf("number of processors: %d\n", num_procs);
-        printf("number of threads: %d\n", num_threads);
-        printf("number of iterations: %d\n", iter);
-        printf("hidden size: %d\n", hidden_size);
-        printf("number of negative samples: %d\n", negative);
-        printf("window size: %d\n", window);
-        printf("batch size: %d\n", batch_size);
-        printf("starting learning rate: %.5f\n", alpha);
-        printf("stream from disk: %d\n", disk);
-        printf("model sync period (secs): %.5f\n", model_sync_period);
-        printf("minimal words sync'ed each time: %d\n", min_sync_words);
-        printf("full model sync-up times: %d\n", full_sync_times);
-        printf("MPI message chunk size (MB): %d\n", message_size);
-        printf("starting training using file: %s\n\n", train_file);
-    }
-
-    vocab = (struct vocab_word *) calloc(vocab_max_size, sizeof(struct vocab_word));
-    vocab_hash = (int *) _mm_malloc(vocab_hash_size * sizeof(int), 64);
-    expTable = (real *) _mm_malloc((EXP_TABLE_SIZE + 1) * sizeof(real), 64);
-    for (i = 0; i < EXP_TABLE_SIZE + 1; i++) {
-        expTable[i] = exp((i / (real) EXP_TABLE_SIZE * 2 - 1) * MAX_EXP); // Precompute the exp() table
-        expTable[i] = expTable[i] / (expTable[i] + 1);                    // Precompute f(x) = x / (x + 1)
-    }
-
-    Train_SGNS_MPI();
-
-    if (my_rank == 0) saveModel();
-
-    MPI_Finalize();
-    return 0;
+void w2v(w2v_params_t *p, char *train)
+{
+  // int mpi_thread_provided;
+  // MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &mpi_thread_provided);
+  // if (mpi_thread_provided != MPI_THREAD_MULTIPLE) {
+  //   printf("MPI multiple thread is NOT provided!!! (%d != %d)\n", mpi_thread_provided, MPI_THREAD_MULTIPLE);
+  //   return 1;
+  // }
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  
+  output_file[0] = 0;
+  save_vocab_file[0] = 0;
+  read_vocab_file[0] = 0;
+  
+  strcpy(output_file, "output.txt");
+  strcpy(save_vocab_file, "save_vocab_file.txt") ;
+  strcpy(train_file, train);
+  
+  binary = p->binary;
+  verbose = p->verbose;
+  disk = p->disk;
+  num_threads = p->num_threads;
+  negative = p->negative;
+  iter = p->iter;
+  window = p->window;
+  batch_size = p->batch_size;
+  min_count = p->min_count;
+  min_reduce = p->min_reduce;
+  vocab_max_size = p->vocab_max_size;
+  vocab_size = p->vocab_size;
+  hidden_size = p->hidden_size;
+  min_sync_words = p->min_sync_words;
+  full_sync_times = p->full_sync_times;
+  message_size = p->message_size;
+  train_words = p->train_words;
+  alpha = p->alpha;
+  sample = p->sample;
+  model_sync_period = p->model_sync_period;
+  
+  if (my_rank == 0 && verbose)
+  {
+    Rprintf("number of processors: %d\n", num_procs);
+    Rprintf("number of threads: %d\n", num_threads);
+    Rprintf("number of iterations: %d\n", iter);
+    Rprintf("hidden size: %d\n", hidden_size);
+    Rprintf("number of negative samples: %d\n", negative);
+    Rprintf("window size: %d\n", window);
+    Rprintf("batch size: %d\n", batch_size);
+    Rprintf("starting learning rate: %.5f\n", alpha);
+    Rprintf("stream from disk: %d\n", disk);
+    Rprintf("model sync period (secs): %.5f\n", model_sync_period);
+    Rprintf("minimal words sync'ed each time: %d\n", min_sync_words);
+    Rprintf("full model sync-up times: %d\n", full_sync_times);
+    Rprintf("MPI message chunk size (MB): %d\n", message_size);
+    Rprintf("starting training using file: %s\n\n", train_file);
+  }
+  
+  vocab = (struct vocab_word *) calloc(vocab_max_size, sizeof(struct vocab_word));
+  vocab_hash = (int *) _mm_malloc(vocab_hash_size * sizeof(int), 64);
+  expTable = (real *) _mm_malloc((EXP_TABLE_SIZE + 1) * sizeof(real), 64);
+  for (int i = 0; i < EXP_TABLE_SIZE + 1; i++) {
+    expTable[i] = exp((i / (real) EXP_TABLE_SIZE * 2 - 1) * MAX_EXP); // Precompute the exp() table
+    expTable[i] = expTable[i] / (expTable[i] + 1);                    // Precompute f(x) = x / (x + 1)
+  }
+  
+  Train_SGNS_MPI();
+  
+  if (my_rank == 0)
+    saveModel();
+  
+  free(vocab);
+  free(vocab_hash);
+  free(expTable);
 }
-*/
