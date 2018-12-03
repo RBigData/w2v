@@ -20,6 +20,7 @@
 // This source file has been modified for use within this R package. See the
 // file CHANGES at the same location as this source file for a full list of
 // modifications.
+// Modifications copyright (C) 2018 ORNL
 
 #include "pWord2Vec.h"
 
@@ -70,7 +71,9 @@ public:
 
 int binary = 0, debug_mode = 2;
 bool disk = false;
-int num_procs = 1, num_threads = 12, negative = 5, min_count = 5, min_reduce = 1, iter = 5, window = 5, batch_size = 11, my_rank = -1;
+int num_procs = 1, num_threads = 12, negative = 5, iter = 5, window = 5, batch_size = 11, my_rank = -1;
+unsigned int min_count = 5;
+unsigned int min_reduce = 1;
 int vocab_max_size = 1000, vocab_size = 0, hidden_size = 100, min_sync_words = 1024, full_sync_times = 0;
 int message_size = 1024; // MB
 ulonglong train_words = 0, file_size = 0;
@@ -141,7 +144,7 @@ void ReadWord(char *word, FILE *fin) {
 // Returns hash value of a word
 int GetWordHash(char *word) {
     uint hash = 0;
-    for (int i = 0; i < strlen(word); i++)
+    for (unsigned int i = 0; i < strlen(word); i++)
         hash = hash * 257 + word[i];
     hash = hash % vocab_hash_size;
     return hash;
