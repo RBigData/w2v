@@ -9,7 +9,11 @@
 
 
 #ifndef __INTEL_COMPILER
-  #define _mm_malloc(a,b) malloc(a)
+  // #define _mm_malloc(a,b) malloc(a)
+  static inline void* _mm_malloc(size_t size, size_t alignment)
+  {
+    return aligned_alloc(alignment, size);
+  }
   #define _mm_free free
 #endif
 
