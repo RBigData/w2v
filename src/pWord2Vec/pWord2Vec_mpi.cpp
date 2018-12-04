@@ -256,6 +256,14 @@ static void ReduceVocab() {
 }
 
 static void LearnVocabFromTrainFile() {
+    double time_start, time_end;
+    
+    if (my_rank == 0 && verbose)
+    {
+        Rprintf("### Generating vocabulary\n");
+        time_start = omp_get_wtime();
+    }
+    
     char word[MAX_STRING];
 
     memset(vocab_hash, -1, vocab_hash_size * sizeof(int));
@@ -294,16 +302,44 @@ static void LearnVocabFromTrainFile() {
     }
     file_size = ftell(fin);
     fclose(fin);
+    
+    if (my_rank == 0 && verbose)
+    {
+      time_end = omp_get_wtime();
+      Rprintf("Wall Time: %.2fs\n\n", time_end - time_start);
+    }
 }
 
 static void SaveVocab() {
+    double time_start, time_end;
+    
+    if (verbose) // only executed on rank 0 so no need to check
+    {
+        Rprintf("### Saving vocabulary\n");
+        time_start = omp_get_wtime();
+    }
+    
     FILE *fo = fopen(save_vocab_file, "wb");
     for (int i = 0; i < vocab_size; i++)
         fprintf(fo, "%s %d\n", vocab[i].word, vocab[i].cn);
     fclose(fo);
+    
+    if (verbose)
+    {
+      time_end = omp_get_wtime();
+      Rprintf("\nWall Time: %.2fs\n\n", time_end - time_start);
+    }
 }
 
 static void ReadVocab() {
+    double time_start, time_end;
+    
+    if (my_rank == 0 && verbose)
+    {
+        Rprintf("### Reading vocabulary\n");
+        time_start = omp_get_wtime();
+    }
+    
     char word[MAX_STRING];
     FILE *fin = fopen(read_vocab_file, "rb");
     if (fin == NULL) {
@@ -337,6 +373,12 @@ static void ReadVocab() {
     fseek(fin2, 0, SEEK_END);
     file_size = ftell(fin2);
     fclose(fin2);
+    
+    if (my_rank == 0 && verbose)
+    {
+      time_end = omp_get_wtime();
+      Rprintf("Wall Time: %.2fs\n\n", time_end - time_start);
+    }
 }
 
 static void InitNet() {
@@ -385,6 +427,8 @@ static inline uint getNumZeros(uint v) {
 }
 
 static void Train_SGNS_MPI() {
+    double time_start, time_end;
+    
     if (read_vocab_file != NULL) {
         ReadVocab();
     }
@@ -393,7 +437,13 @@ static void Train_SGNS_MPI() {
     }
     if (my_rank == 0 && save_vocab_file != NULL) SaveVocab();
     if (output_file[0] == 0) return;
-
+    
+    if (my_rank == 0 && verbose)
+    {
+      Rprintf("### Training\n");
+      time_start = omp_get_wtime();
+    }
+    
     InitNet();
     InitUnigramTable();
 
@@ -745,9 +795,23 @@ static void Train_SGNS_MPI() {
             }
         }
     }
+    
+    if (my_rank == 0 && verbose)
+    {
+      time_end = omp_get_wtime();
+      Rprintf("\nWall Time: %.2fs\n\n", time_end - time_start);
+    }
 }
 
 static void saveModel() {
+    double time_start, time_end;
+    
+    if (my_rank == 0 && verbose)
+    {
+        Rprintf("### Saving model");
+        time_start = omp_get_wtime();
+    }
+    
     // save the model
     FILE *fo = fopen(output_file, "wb");
     // Save the word vectors
@@ -763,6 +827,12 @@ static void saveModel() {
         fprintf(fo, "\n");
     }
     fclose(fo);
+    
+    if (my_rank == 0 && verbose)
+    {
+      time_end = omp_get_wtime();
+      Rprintf("\nWall Time: %.2fs\n\n", time_end - time_start);
+    }
 }
 
 
@@ -800,6 +870,8 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   // }
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  
+  double time_start, time_end;
   
   train_file = files->train_file;
   output_file = files->output_file;

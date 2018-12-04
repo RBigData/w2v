@@ -59,10 +59,10 @@ typedef struct
 
 typedef struct
 {
-  bool verbose;
   int num_threads;
   // MPI message chunk size in MB
   int message_size;
+  bool verbose;
 } sys_params_t;
 
 
