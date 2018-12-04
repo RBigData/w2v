@@ -10,12 +10,21 @@
 #' @param output_file
 #' 
 #' @param vocab_file
-#' If a string is provided, it will either write 
-#' If \code{NULL}, neither saving nor reading takes place.
+#' If \code{NULL}, 
+#' @param nthreads
+#' 
+#' @param message_size
+#' 
+#' @param verbose
+#' 
+#' 
+#' @return
+#' Invisibly returns \code{NULL}.
 #' 
 #' @useDynLib w2v R_w2v
 #' @export
-w2v = function(train_file, output_file=NULL, vocab_file=NULL, verbose=FALSE)
+w2v = function(train_file, output_file=NULL, vocab_file=NULL,
+  nthreads=4, message_size=1024, verbose=FALSE)
 {
   train_file = path.expand(train_file)
   if (!file.exists(train_file))
@@ -26,7 +35,8 @@ w2v = function(train_file, output_file=NULL, vocab_file=NULL, verbose=FALSE)
     read_vocab_file = path.expand(vocab_file)
   
   .Call(R_w2v, train_file, output_file, vocab_file,
-    verbose)
+    as.integer(nthreads), as.integer(message_size), as.logical(verbose)
+  )
   
   invisible()
 }

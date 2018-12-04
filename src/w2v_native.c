@@ -6,11 +6,11 @@
 #include <stdlib.h>
 
 extern SEXP R_get_vocab(SEXP train_file, SEXP output_file, SEXP read_vocab_file, SEXP verbose_);
-extern SEXP R_w2v(SEXP train, SEXP verbose_);
+extern SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file, SEXP nthreads, SEXP message_size, SEXP verbose_);
 
 static const R_CallMethodDef CallEntries[] = {
   {"R_get_vocab", (DL_FUNC) &R_get_vocab, 3},
-  {"R_w2v", (DL_FUNC) &R_w2v, 4},
+  {"R_w2v", (DL_FUNC) &R_w2v, 6},
   {NULL, NULL, 0}
 };
 

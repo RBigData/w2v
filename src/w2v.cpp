@@ -6,7 +6,7 @@
 
 
 extern "C" SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file,
-  SEXP verbose_)
+  SEXP nthreads, SEXP message_size, SEXP verbose_)
 {
   w2v_params_t p;
   sys_params_t sys;
@@ -26,9 +26,9 @@ extern "C" SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file,
   p.sample = 1e-3;
   p.model_sync_period = 0.1;
   
+  sys.num_threads = INTEGER(nthreads)[0];
+  sys.message_size = INTEGER(message_size)[0];
   sys.verbose = (bool) INTEGER(verbose_)[0];
-  sys.num_threads = 2;
-  sys.message_size = 1024;
   
   files.train_file = CHARPT(train_file, 0);
   files.output_file = isNull(output_file) ? NULL : CHARPT(output_file, 0);
