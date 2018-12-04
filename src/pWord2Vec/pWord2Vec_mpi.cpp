@@ -20,6 +20,8 @@
 // Modifications copyright (C) 2018 ORNL
 
 #include "../cblas/cblas.h"
+#include "blas.h"
+
 #include "pWord2Vec.h"
 #include <Rinternals.h>
 
@@ -31,12 +33,6 @@
 #include <mpi.h>
 
 using namespace std;
-
-// TODO check for openblas
-// #ifdef USE_MKL
-//     mkl_set_num_threads(1);
-// #endif
-#define USE_CBLAS
 
 
 struct vocab_word {
