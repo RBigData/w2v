@@ -805,24 +805,6 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   
   blas_init();
   
-  if (my_rank == 0 && verbose)
-  {
-    Rprintf("number of processors: %d\n", num_procs);
-    Rprintf("number of threads: %d\n", num_threads);
-    Rprintf("number of iterations: %d\n", iter);
-    Rprintf("hidden size: %d\n", hidden_size);
-    Rprintf("number of negative samples: %d\n", negative);
-    Rprintf("window size: %d\n", window);
-    Rprintf("batch size: %d\n", batch_size);
-    Rprintf("starting learning rate: %.5f\n", alpha);
-    Rprintf("stream from disk: %d\n", disk);
-    Rprintf("model sync period (secs): %.5f\n", model_sync_period);
-    Rprintf("minimal words sync'ed each time: %d\n", min_sync_words);
-    Rprintf("full model sync-up times: %d\n", full_sync_times);
-    Rprintf("MPI message chunk size (MB): %d\n", message_size);
-    Rprintf("starting training using file: %s\n\n", train_file);
-  }
-  
   vocab = (struct vocab_word *) calloc(vocab_max_size, sizeof(struct vocab_word));
   vocab_hash = (int *) _mm_malloc(vocab_hash_size * sizeof(int), 64);
   expTable = (real *) _mm_malloc((EXP_TABLE_SIZE + 1) * sizeof(real), 64);
