@@ -62,7 +62,12 @@ int num_procs;
 int num_threads;
 int my_rank = -1;
 
-int binary;
+unsigned int min_reduce = 1;
+int vocab_max_size = 1000;
+int vocab_size = 0;
+ulonglong train_words = 0;
+
+bool binary;
 bool verbose;
 bool disk;
 int negative;
@@ -70,14 +75,10 @@ int iter;
 int window;
 int batch_size;
 unsigned int min_count;
-unsigned int min_reduce;
-int vocab_max_size;
-int vocab_size;
 int hidden_size;
 int min_sync_words;
 int full_sync_times;
-int message_size; // MB
-ulonglong train_words;
+int message_size;
 ulonglong file_size;
 real alpha;
 real sample;
@@ -778,18 +779,7 @@ static void saveModel() {
 
 
 
-// if ((i = ArgPos((char *) "-train", argc, argv)) > 0)
-//   strcpy(train_file, argv[i + 1]);
-// if ((i = ArgPos((char *) "-save-vocab", argc, argv)) > 0)
-//   strcpy(save_vocab_file, argv[i + 1]);
-// if ((i = ArgPos((char *) "-read-vocab", argc, argv)) > 0)
-//   strcpy(read_vocab_file, argv[i + 1]);
-// if ((i = ArgPos((char *) "-output", argc, argv)) > 0)
-//   strcpy(output_file, argv[i + 1]);
-
-
-
-void w2v(w2v_params_t *p, char *train)
+void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
 {
   // int mpi_thread_provided;
   // MPI_Init_thread(nullptr, nullptr, MPI_THREAD_MULTIPLE, &mpi_thread_provided);
@@ -800,34 +790,28 @@ void w2v(w2v_params_t *p, char *train)
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   
-  output_file[0] = 0;
-  save_vocab_file[0] = 0;
-  read_vocab_file[0] = 0;
-  
-  strcpy(output_file, "output.txt");
-  strcpy(save_vocab_file, "save_vocab_file.txt") ;
-  strcpy(train_file, train);
+  strcpy(train_file, files->train_file);
+  strcpy(output_file, files->output_file);
+  strcpy(save_vocab_file, files->save_vocab_file);
+  strcpy(read_vocab_file, files->read_vocab_file);
   
   binary = p->binary;
-  verbose = p->verbose;
   disk = p->disk;
-  num_threads = p->num_threads;
   negative = p->negative;
   iter = p->iter;
   window = p->window;
   batch_size = p->batch_size;
   min_count = p->min_count;
-  min_reduce = p->min_reduce;
-  vocab_max_size = p->vocab_max_size;
-  vocab_size = p->vocab_size;
   hidden_size = p->hidden_size;
   min_sync_words = p->min_sync_words;
   full_sync_times = p->full_sync_times;
-  message_size = p->message_size;
-  train_words = p->train_words;
   alpha = p->alpha;
   sample = p->sample;
   model_sync_period = p->model_sync_period;
+  
+  verbose = sys->verbose;
+  num_threads = sys->num_threads;
+  message_size = sys->message_size;
   
   if (my_rank == 0 && verbose)
   {
