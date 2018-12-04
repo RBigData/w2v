@@ -6,10 +6,10 @@
 #include <cstdlib>
 
 
-// TODO check for icc first
-#define _mm_malloc(a,b) malloc(a)
-#define _mm_free free
-
+#ifndef __INTEL_COMPILER
+  #define _mm_malloc(a,b) malloc(a)
+  #define _mm_free free
+#endif
 
 
 #define MAX_STRING 256
