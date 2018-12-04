@@ -84,10 +84,10 @@ real alpha;
 real sample;
 real model_sync_period;
 
-char output_file[MAX_STRING];
-char save_vocab_file[MAX_STRING];
-char read_vocab_file[MAX_STRING];
-char train_file[MAX_STRING];
+char *output_file;
+char *save_vocab_file;
+char *read_vocab_file;
+char *train_file;
 
 const int vocab_hash_size = 30000000;  // Maximum 30 * 0.7 = 21M words in the vocabulary
 const int table_size = 1e8;
@@ -385,13 +385,13 @@ static inline uint getNumZeros(uint v) {
 }
 
 static void Train_SGNS_MPI() {
-    if (read_vocab_file[0] != 0) {
+    if (read_vocab_file != NULL) {
         ReadVocab();
     }
     else {
         LearnVocabFromTrainFile();
     }
-    if (my_rank == 0 && save_vocab_file[0] != 0) SaveVocab();
+    if (my_rank == 0 && save_vocab_file != NULL) SaveVocab();
     if (output_file[0] == 0) return;
 
     InitNet();
@@ -767,6 +767,29 @@ static void saveModel() {
 
 
 
+void get_vocab(file_params_t *files, bool verbose_)
+{
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  
+  train_file = files->train_file;
+  output_file = files->output_file;
+  save_vocab_file = files->save_vocab_file;
+  read_vocab_file = files->read_vocab_file;
+  verbose = verbose_;
+  
+  vocab = (struct vocab_word *) calloc(vocab_max_size, sizeof(struct vocab_word));
+  vocab_hash = (int *) _mm_malloc(vocab_hash_size * sizeof(int), 64);
+  
+  LearnVocabFromTrainFile();
+  if (my_rank == 0)
+    SaveVocab();
+  
+  free(vocab);
+  free(vocab_hash);
+}
+
+
+
 void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
 {
   // int mpi_thread_provided;
@@ -778,12 +801,10 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   
-  strcpy(train_file, files->train_file);
-  strcpy(output_file, files->output_file);
-  if (save_vocab_file[0] != 0)
-    strcpy(save_vocab_file, files->save_vocab_file);
-  if (read_vocab_file[0] != 0)
-    strcpy(read_vocab_file, files->read_vocab_file);
+  train_file = files->train_file;
+  output_file = files->output_file;
+  save_vocab_file = files->save_vocab_file;
+  read_vocab_file = files->read_vocab_file;
   
   binary = p->binary;
   disk = p->disk;

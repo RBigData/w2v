@@ -7,7 +7,7 @@ PKG_LIBS = $(BLAS_LIBS) $(FLIBS) $(SPMD_LDFLAGS) $(SHLIB_OPENMP_CXXFLAGS) -lmpi_
 
 CBLAS_OBJS = cblas/cblas_globals.o cblas/cblas_sgemm.o cblas/cblas_xerbla.o
 W2V_OBJS = pWord2Vec/pWord2Vec_mpi.o
-R_OBJS = w2v.o w2v_native.o
+R_OBJS = get_vocab.o w2v.o w2v_native.o
 OBJECTS = $(CBLAS_OBJS) $(W2V_OBJS) $(R_OBJS)
 
 

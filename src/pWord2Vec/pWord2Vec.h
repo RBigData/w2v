@@ -18,7 +18,7 @@
 #endif
 
 
-#define MAX_STRING 256
+#define MAX_STRING 64
 #define EXP_TABLE_SIZE 1000
 #define MAX_EXP 6
 #define MAX_SENTENCE_LENGTH 1000
@@ -80,6 +80,7 @@ typedef struct
 } file_params_t;
 
 
+void get_vocab(file_params_t *files, bool verbose_);
 void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files);
 
 

@@ -5,10 +5,12 @@
 #include <R_ext/Rdynload.h>
 #include <stdlib.h>
 
+extern SEXP R_get_vocab(SEXP train_file, SEXP output_file, SEXP read_vocab_file, SEXP verbose_);
 extern SEXP R_w2v(SEXP train, SEXP verbose_);
 
 static const R_CallMethodDef CallEntries[] = {
-  {"R_w2v", (DL_FUNC) &R_w2v, 2},
+  {"R_get_vocab", (DL_FUNC) &R_get_vocab, 3},
+  {"R_w2v", (DL_FUNC) &R_w2v, 4},
   {NULL, NULL, 0}
 };
 
