@@ -9,10 +9,21 @@
 
 #ifdef BLAS_USE_MKL
   void mkl_set_num_threads(int nt);
-  mkl_set_num_threads(1);
+  static inline void blas_init()
+  {
+    mkl_set_num_threads(1);
+  }
 #elif BLAS_USE_OPENBLAS
   void openblas_set_num_threads(int num_threads);
-  openblas_set_num_threads(1);
+  static inline void blas_init()
+  {
+    openblas_set_num_threads(1);
+  }
+#else
+  static inline void blas_init()
+  {
+    (void) 0;
+  }
 #endif
 
 

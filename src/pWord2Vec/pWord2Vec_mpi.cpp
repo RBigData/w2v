@@ -813,6 +813,8 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   num_threads = sys->num_threads;
   message_size = sys->message_size;
   
+  blas_init();
+  
   if (my_rank == 0 && verbose)
   {
     Rprintf("number of processors: %d\n", num_procs);
