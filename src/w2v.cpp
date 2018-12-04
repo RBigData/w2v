@@ -1,10 +1,11 @@
 #include "pWord2Vec/pWord2Vec.h"
+#include "pWord2Vec/types.h"
 #include <Rinternals.h>
 
 #define CHARPT(x,i) ((char*)CHAR(STRING_ELT(x,i)))
 
 
-extern "C" SEXP R_w2v(SEXP train, SEXP verbose_)
+extern "C" SEXP R_w2v(SEXP train_file, SEXP verbose_)
 {
   w2v_params_t p;
   sys_params_t sys;
@@ -20,15 +21,15 @@ extern "C" SEXP R_w2v(SEXP train, SEXP verbose_)
   p.hidden_size = 100;
   p.min_sync_words = 1024;
   p.full_sync_times = 0;
-  p.alpha = 0.1f;
-  p.sample = 1e-3f;
-  p.model_sync_period = 0.1f;
+  p.alpha = 0.1;
+  p.sample = 1e-3;
+  p.model_sync_period = 0.1;
   
   sys.verbose = (bool) INTEGER(verbose_)[0];
   sys.num_threads = 4;
   sys.message_size = 1024;
   
-  files.train_file = CHARPT(train, 0);
+  files.train_file = CHARPT(train_file, 0);
   files.output_file = "output.txt";
   files.save_vocab_file = "save_vocab_file.txt";
   files.read_vocab_file = 0;

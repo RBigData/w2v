@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "types.h"
+
 
 #ifndef __INTEL_COMPILER
   #define _mm_malloc(a,b) malloc(a)
@@ -17,11 +19,6 @@
 #define MAX_EXP 6
 #define MAX_SENTENCE_LENGTH 1000
 #define MPI_SCALAR MPI_FLOAT
-
-typedef float real;
-typedef unsigned int uint;
-typedef unsigned long long ulonglong;
-
 
 
 typedef struct
@@ -39,7 +36,7 @@ typedef struct
   // The batch size used for mini-batch training
   int batch_size;
   // This will discard words that appear less than <int> times
-  unsigned int min_count;
+  uint min_count;
   // size of word vectors
   int hidden_size;
   // Minimal number of words to be synced at each model sync

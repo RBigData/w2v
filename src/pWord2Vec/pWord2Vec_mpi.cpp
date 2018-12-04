@@ -62,7 +62,7 @@ int num_procs;
 int num_threads;
 int my_rank = -1;
 
-unsigned int min_reduce = 1;
+uint min_reduce = 1;
 int vocab_max_size = 1000;
 int vocab_size = 0;
 ulonglong train_words = 0;
@@ -74,7 +74,7 @@ int negative;
 int iter;
 int window;
 int batch_size;
-unsigned int min_count;
+uint min_count;
 int hidden_size;
 int min_sync_words;
 int full_sync_times;
@@ -151,7 +151,7 @@ static void ReadWord(char *word, FILE *fin) {
 // Returns hash value of a word
 static int GetWordHash(char *word) {
     uint hash = 0;
-    for (unsigned int i = 0; i < strlen(word); i++)
+    for (uint i = 0; i < strlen(word); i++)
         hash = hash * 257 + word[i];
     hash = hash % vocab_hash_size;
     return hash;
@@ -375,8 +375,8 @@ static ulonglong loadStream(FILE *fin, int *stream, const ulonglong total_words)
 }
 
 // assume v > 0
-static inline unsigned int getNumZeros(unsigned int v) {
-    unsigned int numzeros = 0;
+static inline uint getNumZeros(uint v) {
+    uint numzeros = 0;
     while (!(v & 0x1)) {
         numzeros++;
         v = v >> 1;
@@ -416,7 +416,7 @@ static void Train_SGNS_MPI() {
             ulonglong word_count_actual_global = 0;
             int sync_chunk_size = message_size * 1024 * 1024 / (hidden_size * 4);
             int full_sync_count = 1;
-            unsigned int num_syncs = 0;
+            uint num_syncs = 0;
 
             while (ready_threads < num_threads - 1) {
                 usleep(1);
