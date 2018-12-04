@@ -19,6 +19,7 @@
 
 // Modifications copyright (C) 2018 ORNL
 
+#include "../cblas/cblas.h"
 #include "pWord2Vec.h"
 #include <Rinternals.h>
 
@@ -29,11 +30,13 @@
 #include <omp.h>
 #include <mpi.h>
 
-#ifdef USE_MKL
-#include "mkl.h"
-#endif
-
 using namespace std;
+
+// TODO check for openblas
+// #ifdef USE_MKL
+//     mkl_set_num_threads(1);
+// #endif
+#define USE_CBLAS
 
 
 struct vocab_word {
@@ -385,10 +388,6 @@ static inline unsigned int getNumZeros(unsigned int v) {
 }
 
 static void Train_SGNS_MPI() {
-#ifdef USE_MKL
-    mkl_set_num_threads(1);
-#endif
-
     if (read_vocab_file[0] != 0) {
         ReadVocab();
     }
@@ -640,7 +639,7 @@ static void Train_SGNS_MPI() {
                         memcpy(outputM + i * hidden_size, Woh + outputs.indices[i] * hidden_size, hidden_size * sizeof(real));
                     }
 
-#ifndef USE_MKL
+#ifndef USE_CBLAS
                     for (int i = 0; i < output_size; i++) {
                         int c = outputs.meta[i];
                         for (int j = 0; j < input_size; j++) {
@@ -680,7 +679,7 @@ static void Train_SGNS_MPI() {
                     }
 #endif
 
-#ifndef USE_MKL
+#ifndef USE_CBLAS
                     for (int i = 0; i < output_size; i++) {
                         for (int j = 0; j < hidden_size; j++) {
                             real f = 0.f;
@@ -696,7 +695,7 @@ static void Train_SGNS_MPI() {
                             input_size, inputM, hidden_size, 0.0f, outputMd, hidden_size);
 #endif
 
-#ifndef USE_MKL
+#ifndef USE_CBLAS
                     for (int i = 0; i < input_size; i++) {
                         for (int j = 0; j < hidden_size; j++) {
                             real f = 0.f;

@@ -27,7 +27,7 @@ typedef unsigned long long ulonglong;
 typedef struct
 {
   int binary;
-  int debug_mode;
+  bool verbose;
   bool disk;
   int num_threads;
   int negative;
