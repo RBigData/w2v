@@ -2,10 +2,13 @@ SPMD_CPPFLAGS = @SPMD_CPPFLAGS@
 SPMD_LDFLAGS = @SPMD_LDFLAGS@
 
 PKG_CXXFLAGS = $(SPMD_CPPFLAGS) $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(SPMD_LDFLAGS) $(SHLIB_OPENMP_CXXFLAGS) -lmpi_cxx
+PKG_LIBS = $(BLAS_LIBS) $(FLIBS) $(SPMD_LDFLAGS) $(SHLIB_OPENMP_CXXFLAGS) -lmpi_cxx
 
 
-OBJECTS = pWord2Vec/pWord2Vec_mpi.o w2v.o w2v_native.o 
+CBLAS_OBJS = cblas/cblas_globals.o cblas/cblas_sgemm.o cblas/cblas_xerbla.o
+W2V_OBJS = pWord2Vec/pWord2Vec_mpi.o
+R_OBJS = w2v.o w2v_native.o
+OBJECTS = $(CBLAS_OBJS) $(W2V_OBJS) $(R_OBJS)
 
 
 all: $(SHLIB)
