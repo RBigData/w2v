@@ -747,18 +747,6 @@ static void Train_SGNS_MPI() {
     }
 }
 
-static int ArgPos(char *str, int argc, char **argv) {
-    for (int a = 1; a < argc; a++)
-        if (!strcmp(str, argv[a])) {
-            //if (a == argc - 1) {
-            //    printf("Argument missing for %s\n", str);
-            //    exit(1);
-            //}
-            return a;
-        }
-    return -1;
-}
-
 static void saveModel() {
     // save the model
     FILE *fo = fopen(output_file, "wb");
@@ -792,8 +780,10 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   
   strcpy(train_file, files->train_file);
   strcpy(output_file, files->output_file);
-  strcpy(save_vocab_file, files->save_vocab_file);
-  strcpy(read_vocab_file, files->read_vocab_file);
+  if (save_vocab_file[0] != 0)
+    strcpy(save_vocab_file, files->save_vocab_file);
+  if (read_vocab_file[0] != 0)
+    strcpy(read_vocab_file, files->read_vocab_file);
   
   binary = p->binary;
   disk = p->disk;
