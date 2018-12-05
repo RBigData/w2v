@@ -327,7 +327,7 @@ static void SaveVocab() {
     if (verbose)
     {
       time_end = omp_get_wtime();
-      Rprintf("\nWall Time: %.2fs\n\n", time_end - time_start);
+      Rprintf("Wall Time: %.2fs\n\n", time_end - time_start);
     }
 }
 
