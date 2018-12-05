@@ -4,20 +4,30 @@
 \alias{w2v}
 \title{w2v}
 \usage{
-w2v(train_file, output_file, vocab_file = NULL, verbose = FALSE)
+w2v(params = w2v_params(), train_file, output_file = NULL,
+  vocab_file = NULL, nthreads = 4, message_size = 1024, verbose = FALSE)
 }
 \arguments{
-\item{train_file}{}
+\item{params}{A parameters list. See \code{?w2v_params}.}
 
-\item{output_file}{}
+\item{train_file}{Input plaintext file.}
 
-\item{vocab_file}{If a string is provided, it will either write 
-If \code{NULL}, neither saving nor reading takes place.}
+\item{output_file}{TODO}
+
+\item{vocab_file}{Either a file path (string) pointing to the output of \code{get_vocab()} if
+the vocabulary has been pre-computed, or \code{NULL} to compute it on the
+fly.}
+
+\item{nthreads}{TODO}
+
+\item{message_size}{MPI message chunk size in MB.}
+
+\item{verbose}{Want it to print what it's doing?}
+}
+\value{
+Invisibly returns \code{NULL}.
 }
 \description{
-TODO
-}
-\details{
-TODO
+Bindings for MPI+threads implementation of word2vec.
 }
 

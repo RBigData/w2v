@@ -27,32 +27,32 @@
 
 typedef struct
 {
-  // Save the resulting vectors in binary mode?
   bool binary;
-  // Stream text from disk during training? Otherwise the text will be loaded into memory before training
+  // Save the resulting vectors in binary mode?
   bool disk;
-  // Number of negative examples; default is 5, common values are 3 - 10 (0 = not used)
+  // Stream text from disk during training? Otherwise the text will be loaded into memory before training
   int negative;
-  // Number of training iterations
+  // Number of negative examples; default is 5, common values are 3 - 10 (0 = not used)
   int iter;
-  // Set max skip length between words
+  // Number of training iterations
   int window;
-  // The batch size used for mini-batch training
+  // Set max skip length between words
   int batch_size;
-  // This will discard words that appear less than <int> times
+  // The batch size used for mini-batch training
   uint min_count;
-  // size of word vectors
+  // This will discard words that appear less than <int> times
   int hidden_size;
-  // Minimal number of words to be synced at each model sync
+  // size of word vectors
   int min_sync_words;
-  // Enforced full model sync-up times during training
+  // Minimal number of words to be synced at each model sync
   int full_sync_times;
-  // the starting learning rate
+  // Enforced full model sync-up times during training
   real alpha;
-  // threshold for occurrence of words. Those that appear with higher frequency in the training data
+  // the starting learning rate
   real sample;
-  // Synchronize model every <float> seconds; default is 0.1
+  // threshold for occurrence of words. Those that appear with higher frequency in the training data
   real model_sync_period;
+  // Synchronize model every <float> seconds; default is 0.1
 } w2v_params_t;
 
 

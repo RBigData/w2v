@@ -2,6 +2,7 @@
 
 export(get_vocab)
 export(w2v)
+export(w2v_params)
 importFrom(pbdMPI,comm.stop)
 useDynLib(w2v,R_get_vocab)
 useDynLib(w2v,R_w2v)
