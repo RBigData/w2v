@@ -21,7 +21,7 @@
 #' @param min_sync_words
 #' (positive integer) Minimal number of words to be synced at each model sync.
 #' @param full_sync_times
-#' (positive integer) Enforced full model sync-up times during training.
+#' (non-negative integer) Enforced full model sync-up times during training.
 #' @param alpha
 #' (float) Initial learning rate.
 #' @param sample
@@ -58,7 +58,7 @@ w2v_params = function(
   check.is.natnum(min_count)
   check.is.posint(hidden_size)
   check.is.posint(min_sync_words)
-  check.is.posint(full_sync_times)
+  check.is.natnum(full_sync_times)
   check.is.float(alpha)
   check.is.float(sample)
   check.is.float(model_sync_period)
