@@ -6,6 +6,8 @@
 #' Input plaintext file.
 #' @param vocab_file
 #' File path (string) pointing to where you want the vocabulary to be saved.
+#' @param comm
+#' An MPI communicator number (from pbdMPI).
 #' @param verbose
 #' Want it to print what it's doing?
 #' 

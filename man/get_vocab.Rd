@@ -4,12 +4,14 @@
 \alias{get_vocab}
 \title{get_vocab}
 \usage{
-get_vocab(train_file, vocab_file, verbose = FALSE)
+get_vocab(train_file, vocab_file, comm = 0, verbose = FALSE)
 }
 \arguments{
 \item{train_file}{Input plaintext file.}
 
 \item{vocab_file}{File path (string) pointing to where you want the vocabulary to be saved.}
+
+\item{comm}{An MPI communicator number (from pbdMPI).}
 
 \item{verbose}{Want it to print what it's doing?}
 }

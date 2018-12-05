@@ -5,7 +5,8 @@
 \title{w2v}
 \usage{
 w2v(params = w2v_params(), train_file, output_file = NULL,
-  vocab_file = NULL, nthreads = 4, message_size = 1024, verbose = FALSE)
+  vocab_file = NULL, nthreads = 4, message_size = 1024, comm = 0,
+  verbose = FALSE)
 }
 \arguments{
 \item{params}{A parameters list. See \code{?w2v_params}.}
@@ -21,6 +22,8 @@ fly.}
 \item{nthreads}{TODO}
 
 \item{message_size}{MPI message chunk size in MB.}
+
+\item{comm}{An MPI communicator number (from pbdMPI).}
 
 \item{verbose}{Want it to print what it's doing?}
 }
