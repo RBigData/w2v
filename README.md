@@ -6,7 +6,7 @@
 * **Bug reports**: https://github.com/rbigdata/w2v/issues
 
 
-R bindings for a MPI+threads parallel word2vec. The internals are a modified version of [pWord2Vec](https://github.com/IntelLabs/pWord2Vec).
+R bindings for an MPI+threads parallel word2vec. The internals are a modified version of [pWord2Vec](https://github.com/IntelLabs/pWord2Vec).
 
 
 ## Installation
