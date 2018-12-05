@@ -5,7 +5,7 @@
 \alias{w2v-package}
 \title{w2v}
 \description{
-TODO
+Bindings for a MPI+threads parallel implementation of word2vec.
 }
 \author{
 Drew Schmidt \email{wrathematics AT gmail.com}

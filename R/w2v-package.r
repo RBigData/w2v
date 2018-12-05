@@ -1,6 +1,6 @@
 #' w2v
 #' 
-#' TODO
+#' Bindings for a MPI+threads parallel implementation of word2vec.
 #' 
 #' @importFrom pbdMPI comm.stop
 #' 

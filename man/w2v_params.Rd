@@ -28,7 +28,7 @@ w2v_params(binary = FALSE, disk = FALSE, negative = 5, iter = 5,
 
 \item{min_sync_words}{(positive integer) Minimal number of words to be synced at each model sync.}
 
-\item{full_sync_times}{(positive integer) Enforced full model sync-up times during training.}
+\item{full_sync_times}{(non-negative integer) Enforced full model sync-up times during training.}
 
 \item{alpha}{(float) Initial learning rate.}
 
