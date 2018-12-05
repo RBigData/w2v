@@ -13,8 +13,8 @@ extern "C" SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file,
   sys_params_t sys;
   file_params_t files;
   
-  p.binary = (bool) LOGICAL(binary);
-  p.disk = (bool) LOGICAL(disk);
+  p.binary = (bool) LOGICAL(binary)[0];
+  p.disk = (bool) LOGICAL(disk)[0];
   p.negative = INTEGER(negative)[0];
   p.iter = INTEGER(iter)[0];
   p.window = INTEGER(window)[0];
