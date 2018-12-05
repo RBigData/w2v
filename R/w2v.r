@@ -16,6 +16,8 @@
 #' TODO
 #' @param message_size
 #' MPI message chunk size in MB.
+#' @param comm
+#' An MPI communicator number (from pbdMPI).
 #' @param verbose
 #' Want it to print what it's doing?
 #' 
@@ -25,7 +27,7 @@
 #' @useDynLib w2v R_w2v
 #' @export
 w2v = function(params=w2v_params(), train_file, output_file=NULL, vocab_file=NULL,
-  nthreads=4, message_size=1024, verbose=FALSE)
+  nthreads=4, message_size=1024, comm=0, verbose=FALSE)
 {
   train_file = path.expand(train_file)
   if (!file.exists(train_file))
@@ -39,9 +41,11 @@ w2v = function(params=w2v_params(), train_file, output_file=NULL, vocab_file=NUL
       comm.stop("vocab_file does not exist")
   }
   
+  comm_ptr = pbdMPI::get.mpi.comm.ptr(comm)
+  
   .Call(R_w2v, train_file, output_file, vocab_file,
     params$binary, params$disk, params$negative, params$iter, params$window, params$batch_size, params$min_count, params$hidden_size, params$min_sync_words, params$full_sync_times, params$alpha, params$sample, params$model_sync_period,
-    as.integer(nthreads), as.integer(message_size), as.logical(verbose)
+    as.integer(nthreads), as.integer(message_size), comm_ptr, as.logical(verbose)
   )
   
   invisible()

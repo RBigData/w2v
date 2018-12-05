@@ -1,13 +1,20 @@
 #include "pWord2Vec/pWord2Vec.h"
 #include "pWord2Vec/types.h"
+#include <mpi.h>
 #include <Rinternals.h>
 
 #define CHARPT(x,i) ((char*)CHAR(STRING_ELT(x,i)))
 
+static inline MPI_Comm* get_mpi_comm_from_Robj(SEXP comm_)
+{
+  MPI_Comm *comm = (MPI_Comm*) R_ExternalPtrAddr(comm_);
+  return comm;
+}
+
 
 extern "C" SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file,
   SEXP binary, SEXP disk, SEXP negative, SEXP iter, SEXP window, SEXP batch_size, SEXP min_count, SEXP hidden_size, SEXP min_sync_words, SEXP full_sync_times, SEXP alpha, SEXP sample, SEXP model_sync_period,
-  SEXP nthreads, SEXP message_size, SEXP verbose_)
+  SEXP nthreads, SEXP message_size, SEXP comm_ptr, SEXP verbose_)
 {
   w2v_params_t p;
   sys_params_t sys;
@@ -29,6 +36,7 @@ extern "C" SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file,
   
   sys.num_threads = INTEGER(nthreads)[0];
   sys.message_size = INTEGER(message_size)[0];
+  sys.comm = *(get_mpi_comm_from_Robj(comm_ptr));
   sys.verbose = (bool) INTEGER(verbose_)[0];
   
   files.train_file = CHARPT(train_file, 0);

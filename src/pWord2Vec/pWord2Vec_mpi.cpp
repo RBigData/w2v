@@ -58,17 +58,12 @@ public:
 };
 
 
-int num_procs;
-int num_threads;
-int my_rank = -1;
-
 uint min_reduce = 1;
 int vocab_max_size = 1000;
 int vocab_size = 0;
 ulonglong train_words = 0;
 
 bool binary;
-bool verbose;
 bool disk;
 int negative;
 int iter;
@@ -78,11 +73,18 @@ uint min_count;
 int hidden_size;
 int min_sync_words;
 int full_sync_times;
-int message_size;
 ulonglong file_size;
 real alpha;
 real sample;
 real model_sync_period;
+
+
+int num_threads;
+int message_size;
+MPI_Comm comm;
+bool verbose;
+int num_procs;
+int my_rank = -1;
 
 char *output_file;
 char *save_vocab_file;
@@ -473,7 +475,7 @@ static void Train_SGNS_MPI() {
             while (ready_threads < num_threads - 1) {
                 usleep(1);
             }
-            MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Barrier(comm);
 
             #pragma omp atomic
             ready_threads++;
@@ -489,8 +491,8 @@ static void Train_SGNS_MPI() {
                     active_processes = (active_threads > 0 ? 1 : 0);
 
                     // synchronize parameters
-                    MPI_Allreduce(&active_processes, &active_processes_global, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-                    MPI_Allreduce(&word_count_actual, &word_count_actual_global, 1, MPI_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+                    MPI_Allreduce(&active_processes, &active_processes_global, 1, MPI_INT, MPI_SUM, comm);
+                    MPI_Allreduce(&word_count_actual, &word_count_actual_global, 1, MPI_LONG_LONG, MPI_SUM, comm);
 
                     // determine if full sync
                     int sync_vocab_size = min((1 << getNumZeros(num_syncs)) * min_sync_words, vocab_size);
@@ -504,8 +506,8 @@ static void Train_SGNS_MPI() {
                     for (int r = 0; r < num_rounds; r++) {
                         int start = r * sync_chunk_size;
                         int sync_size = min(sync_chunk_size, sync_vocab_size - start);
-                        MPI_Allreduce(MPI_IN_PLACE, Wih + start * hidden_size, sync_size * hidden_size, MPI_SCALAR, MPI_SUM, MPI_COMM_WORLD);
-                        MPI_Allreduce(MPI_IN_PLACE, Woh + start * hidden_size, sync_size * hidden_size, MPI_SCALAR, MPI_SUM, MPI_COMM_WORLD);
+                        MPI_Allreduce(MPI_IN_PLACE, Wih + start * hidden_size, sync_size * hidden_size, MPI_SCALAR, MPI_SUM, comm);
+                        MPI_Allreduce(MPI_IN_PLACE, Woh + start * hidden_size, sync_size * hidden_size, MPI_SCALAR, MPI_SUM, comm);
                     }
 
                     #pragma omp simd
@@ -841,7 +843,7 @@ static void saveModel() {
 
 void get_vocab(file_params_t *files, bool verbose_)
 {
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_rank(comm, &my_rank);
   
   train_file = files->train_file;
   output_file = files->output_file;
@@ -870,8 +872,8 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   //   printf("MPI multiple thread is NOT provided!!! (%d != %d)\n", mpi_thread_provided, MPI_THREAD_MULTIPLE);
   //   return 1;
   // }
-  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  MPI_Comm_size(comm, &num_procs);
+  MPI_Comm_rank(comm, &my_rank);
   
   double time_start, time_end;
   
@@ -894,9 +896,10 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   sample = p->sample;
   model_sync_period = p->model_sync_period;
   
-  verbose = sys->verbose;
   num_threads = sys->num_threads;
   message_size = sys->message_size;
+  comm = sys->comm;
+  verbose = sys->verbose;
   
   blas_init();
   

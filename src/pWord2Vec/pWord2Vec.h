@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <mpi.h>
 
 #include "types.h"
 
@@ -62,6 +63,7 @@ typedef struct
   int num_threads;
   // MPI message chunk size in MB
   int message_size;
+  MPI_Comm comm;
   bool verbose;
 } sys_params_t;
 

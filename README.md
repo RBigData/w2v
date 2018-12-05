@@ -11,10 +11,11 @@ R bindings for a MPI+threads parallel word2vec. The internals are a modified ver
 
 ## Installation
 
-In order to install the package, you will need a system installation of MPI as well as the pbdMPI package. You will also need the development version of the float package installed:
+In order to install the package, you will need a system installation of MPI. See the [pbdMPI package documentation]() for more information. You will also need the development versions of the float and pbdMPI packages:
 
 ```r
 remotes::install_github("wrathematics/float")
+remotes::install_github("snoweye/pbdMPI")
 ```
 
 The development version is maintained on GitHub:
