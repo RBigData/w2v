@@ -78,7 +78,6 @@ real alpha;
 real sample;
 real model_sync_period;
 
-
 int num_threads;
 int message_size;
 MPI_Comm comm;
@@ -445,6 +444,7 @@ static void Train_SGNS_MPI() {
     if (my_rank == 0 && verbose)
     {
       Rprintf("### Training\n");
+      Rprintf("%d Ranks/%d Threads\n", num_procs, num_threads);
       time_start = omp_get_wtime();
     }
     
