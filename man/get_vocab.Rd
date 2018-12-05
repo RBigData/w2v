@@ -7,14 +7,16 @@
 get_vocab(train_file, vocab_file, verbose = FALSE)
 }
 \arguments{
-\item{train_file}{TODO}
+\item{train_file}{Input plaintext file.}
 
-\item{vocab_file}{TODO}
+\item{vocab_file}{File path (string) pointing to where you want the vocabulary to be saved.}
+
+\item{verbose}{Want it to print what it's doing?}
+}
+\value{
+Invisibly returns \code{NULL}.
 }
 \description{
-TODO
-}
-\details{
-TODO
+Pre-compute the vocabulary for use with \code{w2v()}.
 }
 

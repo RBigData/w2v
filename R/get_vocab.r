@@ -1,14 +1,16 @@
 #' get_vocab
 #' 
-#' TODO
-#' 
-#' @details
-#' TODO
+#' Pre-compute the vocabulary for use with \code{w2v()}.
 #' 
 #' @param train_file
-#' TODO
+#' Input plaintext file.
 #' @param vocab_file
-#' TODO
+#' File path (string) pointing to where you want the vocabulary to be saved.
+#' @param verbose
+#' Want it to print what it's doing?
+#' 
+#' @return
+#' Invisibly returns \code{NULL}.
 #' 
 #' @useDynLib w2v R_get_vocab
 #' @export
