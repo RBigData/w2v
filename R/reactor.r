@@ -113,36 +113,3 @@ check.is.flag <- function(x)
   
   invisible(TRUE)
 }
-
-check.is.shaq <- function(x)
-{
-  if (!is.shaq(x))
-  {
-    nm <- deparse(substitute(x))
-    comm.stop(paste0("argument '", nm, "' must be a shaq"), call.=FALSE)
-  }
-  
-  invisible(TRUE)
-}
-
-check.is.matrix <- function(x)
-{
-  if (!is.matrix(x))
-  {
-    nm <- deparse(substitute(x))
-    comm.stop(paste0("argument '", nm, "' must be a matrix"), call.=FALSE)
-  }
-  
-  invisible(TRUE)
-}
-
-check.is.function <- function(x)
-{
-  if (!is.function(x))
-	{
-    nm <- deparse(substitute(x))
-    comm.stop(paste0("argument '", nm, "' must be a function"), call.=FALSE)
-  }
-	
-  invisible(TRUE)
-}
