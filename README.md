@@ -11,18 +11,23 @@ R bindings for a MPI+threads parallel word2vec. The internals are a modified ver
 
 ## Installation
 
+In order to install the package, you will need a system installation of MPI as well as the pbdMPI package. You will also need the development version of the float package installed:
+
+```r
+remotes::install_github("wrathematics/float")
+```
+
 The development version is maintained on GitHub:
 
 ```r
 remotes::install_github("RBigData/w2v")
 ```
 
-You will need a system installation of MPI as well as the pbdMPI package.
 
 
 ## (un)Known Issues
 
-To build the package at this time, you will need a fairly modern version of gcc (I am using gcc-7). You should also have OpenBLAS or MKL installed and in your `$LD_LIBRARY_PATH` for the best performance.
+To build the package at this time, you will need a fairly modern version of icc or gcc (I am using gcc-7). You should also have OpenBLAS or MKL installed and in your `$LD_LIBRARY_PATH` for the best performance.
 
 It might not build on a mac. It definitely won't build on windows.
 

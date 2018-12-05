@@ -1,8 +1,10 @@
+FLOAT_LIBS = `${R_HOME}/bin/Rscript -e "float:::ldflags()"`
+
 SPMD_CPPFLAGS = @SPMD_CPPFLAGS@
 SPMD_LDFLAGS = @SPMD_LDFLAGS@
 
 PKG_CXXFLAGS = $(SPMD_CPPFLAGS) $(SHLIB_OPENMP_CXXFLAGS)
-PKG_LIBS = $(BLAS_LIBS) $(FLIBS) $(SPMD_LDFLAGS) $(SHLIB_OPENMP_CXXFLAGS) -lmpi_cxx
+PKG_LIBS = $(FLOAT_LIBS) $(BLAS_LIBS) $(FLIBS) $(SPMD_LDFLAGS) $(SHLIB_OPENMP_CXXFLAGS) -lmpi_cxx
 
 
 CBLAS_OBJS = cblas/cblas_globals.o cblas/cblas_sgemm.o cblas/cblas_xerbla.o
