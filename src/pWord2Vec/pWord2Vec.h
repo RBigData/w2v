@@ -82,7 +82,7 @@ typedef struct
 } file_params_t;
 
 
-void get_vocab(file_params_t *files, bool verbose_);
+void get_vocab(sys_params_t *sys, file_params_t *files);
 void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files);
 
 

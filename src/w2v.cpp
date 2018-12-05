@@ -1,15 +1,6 @@
 #include "pWord2Vec/pWord2Vec.h"
 #include "pWord2Vec/types.h"
-#include <mpi.h>
-#include <Rinternals.h>
-
-#define CHARPT(x,i) ((char*)CHAR(STRING_ELT(x,i)))
-
-static inline MPI_Comm* get_mpi_comm_from_Robj(SEXP comm_)
-{
-  MPI_Comm *comm = (MPI_Comm*) R_ExternalPtrAddr(comm_);
-  return comm;
-}
+#include "Rw2v.h"
 
 
 extern "C" SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file,

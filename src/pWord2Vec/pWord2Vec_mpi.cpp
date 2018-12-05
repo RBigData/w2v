@@ -841,15 +841,17 @@ static void saveModel() {
 
 
 
-void get_vocab(file_params_t *files, bool verbose_)
+void get_vocab(sys_params_t *sys, file_params_t *files)
 {
-  MPI_Comm_rank(comm, &my_rank);
+  comm = sys->comm;
+  verbose = sys->verbose;
   
   train_file = files->train_file;
   output_file = files->output_file;
   save_vocab_file = files->save_vocab_file;
   read_vocab_file = files->read_vocab_file;
-  verbose = verbose_;
+  
+  MPI_Comm_rank(comm, &my_rank);
   
   vocab = (struct vocab_word *) calloc(vocab_max_size, sizeof(struct vocab_word));
   vocab_hash = (int *) _mm_malloc(vocab_hash_size * sizeof(int), 64);
@@ -872,9 +874,6 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   //   printf("MPI multiple thread is NOT provided!!! (%d != %d)\n", mpi_thread_provided, MPI_THREAD_MULTIPLE);
   //   return 1;
   // }
-  MPI_Comm_size(comm, &num_procs);
-  MPI_Comm_rank(comm, &my_rank);
-  
   double time_start, time_end;
   
   train_file = files->train_file;
@@ -900,6 +899,10 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   message_size = sys->message_size;
   comm = sys->comm;
   verbose = sys->verbose;
+  
+  comm = MPI_COMM_WORLD;
+  MPI_Comm_size(comm, &num_procs);
+  MPI_Comm_rank(comm, &my_rank);
   
   blas_init();
   

@@ -14,7 +14,7 @@
 #' 
 #' @useDynLib w2v R_get_vocab
 #' @export
-get_vocab = function(train_file, vocab_file, verbose=FALSE)
+get_vocab = function(train_file, vocab_file, comm=0, verbose=FALSE)
 {
   check.is.string(train_file)
   check.is.string(vocab_file)
@@ -25,6 +25,8 @@ get_vocab = function(train_file, vocab_file, verbose=FALSE)
     comm.stop("train_file does not exist")
   vocab_file = path.expand(vocab_file)
   
-  .Call(R_get_vocab, train_file, vocab_file, verbose)
+  comm_ptr = pbdMPI::get.mpi.comm.ptr(comm)
+  
+  .Call(R_get_vocab, train_file, vocab_file, comm_ptr, verbose)
   invisible()
 }

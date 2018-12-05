@@ -5,7 +5,7 @@
 #include <R_ext/Rdynload.h>
 #include <stdlib.h>
 
-extern SEXP R_get_vocab(SEXP train_file, SEXP output_file, SEXP read_vocab_file, SEXP verbose_);
+extern SEXP R_get_vocab(SEXP train_file, SEXP vocab_file, SEXP comm_ptr, SEXP verbose);
 extern SEXP R_w2v(SEXP train_file, SEXP output_file, SEXP read_vocab_file,
   SEXP binary, SEXP disk, SEXP negative, SEXP iter, SEXP window, SEXP batch_size, SEXP min_count, SEXP hidden_size, SEXP min_sync_words, SEXP full_sync_times, SEXP alpha, SEXP sample, SEXP model_sync_period,
   SEXP nthreads, SEXP message_size, SEXP comm_ptr, SEXP verbose_);
