@@ -874,8 +874,6 @@ void w2v(w2v_params_t *p, sys_params_t *sys, file_params_t *files)
   //   printf("MPI multiple thread is NOT provided!!! (%d != %d)\n", mpi_thread_provided, MPI_THREAD_MULTIPLE);
   //   return 1;
   // }
-  double time_start, time_end;
-  
   train_file = files->train_file;
   output_file = files->output_file;
   save_vocab_file = files->save_vocab_file;
