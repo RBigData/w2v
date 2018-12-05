@@ -16,6 +16,10 @@
 #' @export
 get_vocab = function(train_file, vocab_file, verbose=FALSE)
 {
+  check.is.string(train_file)
+  check.is.string(vocab_file)
+  check.is.flag(verbose)
+  
   train_file = path.expand(train_file)
   if (!file.exists(train_file))
     comm.stop("train_file does not exist")
