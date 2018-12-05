@@ -269,10 +269,11 @@ static void LearnVocabFromTrainFile() {
     memset(vocab_hash, -1, vocab_hash_size * sizeof(int));
 
     FILE *fin = fopen(train_file, "rb");
-    if (fin == NULL) {
-        printf("ERROR: training data file not found!\n");
-        exit(1);
-    }
+    // NOTE checked on the R side
+    // if (fin == NULL) {
+    //     printf("ERROR: training data file not found!\n");
+    //     exit(1);
+    // }
 
     train_words = 0;
     vocab_size = 0;
@@ -283,7 +284,7 @@ static void LearnVocabFromTrainFile() {
             break;
         train_words++;
         if (my_rank == 0 && verbose && (train_words % 100000 == 0)) {
-            printf("%lldK%c", train_words / 1000, 13);
+            Rprintf("%lldK%c", train_words / 1000, 13);
             fflush(stdout);
         }
         int i = SearchVocab(word);
@@ -297,8 +298,8 @@ static void LearnVocabFromTrainFile() {
     }
     SortVocab();
     if (my_rank == 0 && verbose) {
-        printf("Vocab size: %d\n", vocab_size);
-        printf("Words in train file: %lld\n", train_words);
+        Rprintf("Vocab size: %d\n", vocab_size);
+        Rprintf("Words in train file: %lld\n", train_words);
     }
     file_size = ftell(fin);
     fclose(fin);
@@ -342,10 +343,11 @@ static void ReadVocab() {
     
     char word[MAX_STRING];
     FILE *fin = fopen(read_vocab_file, "rb");
-    if (fin == NULL) {
-        printf("Vocabulary file not found\n");
-        exit(1);
-    }
+    // NOTE checked on the R side 
+    // if (fin == NULL) {
+    //     printf("Vocabulary file not found\n");
+    //     exit(1);
+    // }
     memset(vocab_hash, -1, vocab_hash_size * sizeof(int));
 
     char c;
@@ -359,17 +361,18 @@ static void ReadVocab() {
     }
     SortVocab();
     if (verbose && my_rank == 0) {
-        printf("Vocab size: %d\n", vocab_size);
-        printf("Words in train file: %lld\n", train_words);
+        Rprintf("Vocab size: %d\n", vocab_size);
+        Rprintf("Words in train file: %lld\n", train_words);
     }
     fclose(fin);
 
     // get file size
     FILE *fin2 = fopen(train_file, "rb");
-    if (fin2 == NULL) {
-        printf("ERROR: training data file not found!\n");
-        exit(1);
-    }
+    // NOTE checked on the R side
+    // if (fin2 == NULL) {
+    //     printf("ERROR: training data file not found!\n");
+    //     exit(1);
+    // }
     fseek(fin2, 0, SEEK_END);
     file_size = ftell(fin2);
     fclose(fin2);
@@ -385,8 +388,7 @@ static void InitNet() {
     Wih = (real *) _mm_malloc(vocab_size * hidden_size * sizeof(real), 64);
     Woh = (real *) _mm_malloc(vocab_size * hidden_size * sizeof(real), 64);
     if (!Wih || !Woh) {
-        printf("Memory allocation failed\n");
-        exit(1);
+        error("Memory allocation failed\n");
     }
 
     #pragma omp parallel for num_threads(num_threads) schedule(static, 1)
@@ -519,7 +521,7 @@ static void Train_SGNS_MPI() {
                     // print out status
                     if (my_rank == 0 && verbose) {
                         double now = omp_get_wtime();
-                        printf("%cAlpha: %f  Progress: %.2f%%  Words/sec: %.2fk  Words sync'ed: %d", 13, alpha,
+                        Rprintf("%cAlpha: %f  Progress: %.2f%%  Words/sec: %.2fk  Words sync'ed: %d", 13, alpha,
                                 progress * 100,
                                 word_count_actual_global / ((now - start) * 1000),
                                 sync_vocab_size);

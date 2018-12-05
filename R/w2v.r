@@ -33,7 +33,11 @@ w2v = function(params=w2v_params(), train_file, output_file=NULL, vocab_file=NUL
   if (!is.null(output_file))
     output_file = path.expand(output_file)
   if (!is.null(vocab_file))
+  {
     read_vocab_file = path.expand(vocab_file)
+    if (!file.exists(vocab_file))
+      comm.stop("vocab_file does not exist")
+  }
   
   .Call(R_w2v, train_file, output_file, vocab_file,
     params$binary, params$disk, params$negative, params$iter, params$window, params$batch_size, params$min_count, params$hidden_size, params$min_sync_words, params$full_sync_times, params$alpha, params$sample, params$model_sync_period,
