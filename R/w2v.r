@@ -36,7 +36,7 @@ w2v = function(params=w2v_params(), train_file, output_file=NULL, vocab_file=NUL
     output_file = path.expand(output_file)
   if (!is.null(vocab_file))
   {
-    read_vocab_file = path.expand(vocab_file)
+    vocab_file = path.expand(vocab_file)
     if (!file.exists(vocab_file))
       comm.stop("vocab_file does not exist")
   }
