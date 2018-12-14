@@ -257,7 +257,7 @@ static void ReduceVocab() {
 }
 
 static void LearnVocabFromTrainFile() {
-    double time_start, time_end;
+    double time_start = 0, time_end;
     
     if (my_rank == 0 && verbose)
     {
@@ -313,7 +313,7 @@ static void LearnVocabFromTrainFile() {
 }
 
 static void SaveVocab() {
-    double time_start, time_end;
+    double time_start = 0, time_end;
     
     if (verbose) // only executed on rank 0 so no need to check
     {
@@ -334,7 +334,7 @@ static void SaveVocab() {
 }
 
 static void ReadVocab() {
-    double time_start, time_end;
+    double time_start = 0, time_end;
     
     if (my_rank == 0 && verbose)
     {
@@ -430,7 +430,7 @@ static inline uint getNumZeros(uint v) {
 }
 
 static void Train_SGNS_MPI() {
-    double time_start, time_end;
+    double time_start = 0, time_end;
     
     if (read_vocab_file != NULL) {
         ReadVocab();
@@ -810,7 +810,7 @@ static void Train_SGNS_MPI() {
 }
 
 static void saveModel() {
-    double time_start, time_end;
+    double time_start = 0, time_end;
     
     if (my_rank == 0 && verbose)
     {
