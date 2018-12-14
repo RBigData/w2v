@@ -511,7 +511,9 @@ static void Train_SGNS_MPI() {
                     }
 
                     #pragma omp simd
-                    #pragma vector aligned
+                    #if defined (__INTEL_COMPILER)
+                        #pragma vector aligned
+                    #endif
                     for (int i = 0; i < sync_vocab_size * hidden_size; i++) {
                         Wih[i] /= num_procs;
                         Woh[i] /= num_procs;
