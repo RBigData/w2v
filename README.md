@@ -33,6 +33,17 @@ To build the package at this time, you will need a fairly modern version of icc 
 It might not build on a mac. It definitely won't build on windows.
 
 
+## Parameters
+
+The default parameters are determined by the convenience function `w2v_params()`, which is the default argument for `params` in `w2v()`. You can modify a parameter by specifying it in `w2v_params()`. For example, if you want to set the initial learning rate to 0.01 and the number of training iterations to 10, you could do:
+
+```r
+params = w2v::w2v_params(alpha=0.01, iter=10)
+```
+
+And then pass the above to the `params` argument of `w2v()`. This all sounds more complicated than it is. See `?w2v::w2v_params` for an explanation of the available parameters.
+
+
 ## Example Use
 
 We'll be using the [text8 dataset](http://mattmahoney.net/dc/textdata), which you can download here [http://mattmahoney.net/dc/text8.zip](http://mattmahoney.net/dc/text8.zip). After downloading, uncompress it. Mine is stored in `/tmp/text8`.
